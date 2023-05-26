@@ -1,0 +1,45 @@
+body{
+    margin:0px;
+    padding:0px;
+    line-height: inherit;
+    /* min-width: 1366px; */
+    font-size: .875rem;
+}
+
+html{
+    font-family: "Söhne";
+    font-feature-settings: normal;
+    font-variation-settings: normal;
+}
+
+
+@font-face {
+    font-display: swap;
+    font-family: Söhne;
+    font-style: normal;
+    font-weight: 400;
+    src:url(./font/soehne-buch.woff2);
+    /* src: url(https://xds.asia/assets/soehne-buch-e14e1bd2.woff2) format("woff2") */
+}
+
+
+button {
+    font-family: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    margin: 0;
+    padding: 0;
+  
+    border: 0 solid #d9d9e3;
+    box-sizing: border-box;
+  }
+
+  audio, canvas, embed, iframe, img, object, svg, video {
+    display: block;
+    vertical-align: middle;
+}
+
+div,span,h1,header,body,html,footer,nav{
+    box-sizing: border-box;
+}

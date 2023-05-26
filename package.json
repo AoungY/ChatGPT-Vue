@@ -1,0 +1,28 @@
+{
+  "name": "vite-05-chatgpt",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host --port 5173",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ant-design/icons-vue": "^6.1.0",
+    "axios": "^1.4.0",
+    "element-plus": "^2.3.4",
+    "highlight.js": "^11.8.0",
+    "marked": "^5.0.2",
+    "marked-highlight": "^2.0.0",
+    "marked-mangle": "^1.0.1",
+    "vue": "^3.2.47",
+    "vue-router": "^4.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.1.0",
+    "unplugin-auto-import": "^0.15.3",
+    "unplugin-vue-components": "^0.24.1",
+    "vite": "^4.3.2"
+  }
+}
