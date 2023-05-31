@@ -5,8 +5,12 @@
         class="regenerate"
         v-show="screenWidth > 768 && activeIndex !== -1 && !streamData"
         @click="sendApi()"
-        :style="screenWidth<=768?`    bottom: 7.5vh;
-    right: calc(100vw / 2 - 178.49px / 2);`:''"
+        :style="
+          screenWidth <= 768
+            ? `    bottom: 7.5vh;
+    right: calc(100vw / 2 - 178.49px / 2);`
+            : ''
+        "
       >
         <div class="regenerate-button">
           <div>
@@ -145,9 +149,16 @@
           </svg>
         </div>
       </div>
-      <div class="myInfo" :style="screenWidth<=768?`    height: 5vh;
+      <div
+        class="myInfo"
+        :style="
+          screenWidth <= 768
+            ? `    height: 5vh;
     --width-myInfo: 100vw;
-    right: calc(100vw / 2 - var(--width-myInfo) / 2);`:''">
+    right: calc(100vw / 2 - var(--width-myInfo) / 2);`
+            : ''
+        "
+      >
         <span>
           The model is gpt-3.5-turbo-0301.Data stored locally in the browser (safe and
           free).Problem feedback
@@ -156,11 +167,7 @@
             >QQ:3342174599</a
           >
           Author home page:
-          <a
-            href="http://aoung.cn"
-            target="_blank"
-            >Aoung</a
-          >
+          <a href="http://aoung.cn" target="_blank">Aoung</a>
         </span>
       </div>
     </div>
@@ -224,7 +231,7 @@ const sendQuestion = () => {
     console.log("new chat", activeIndex.value);
 
     history.value = [
-      { role: "user", content: question.value },
+      { role: "user", content: question.value, markdown: question.value },
       { role: "ai", content: "" },
     ];
 
@@ -244,7 +251,11 @@ const sendQuestion = () => {
     sendApi();
   } else {
     //旧会话
-    history.value.push({ role: "user", content: question.value });
+    history.value.push({
+      role: "user",
+      content: question.value,
+      markdown: question.value,
+    });
     history.value.push({ role: "ai", content: "" });
     sendApi();
   }
@@ -260,7 +271,7 @@ const sendApi = async () => {
   delete chatHistory.value[index].history[len]["markdown"];
   // chatHistory.value[index].history.at(-1).markdown; //清空上一次ai生成的内容
   let data = chatHistory.value[index].history.slice(0, history.value.length - 1);
-  
+
   streamData.value = true; //开启流式数据
   abortController.value = new AbortController(); //重置abortController
   const response = await fetch("/chatGPT", {
@@ -369,6 +380,10 @@ const setPoint = () => {
     else point1.value = point2.value = true;
   }, 400);
 };
+
+
+
+defineExpose({ sendApi });// 暴露方法给父组件
 </script>
 
 <style>

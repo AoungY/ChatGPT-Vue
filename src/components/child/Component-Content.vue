@@ -1,6 +1,6 @@
 <template>
   <div v-for="(item, index) in history" :key="index" class="content">
-    <el-row v-if="item.role === 'user'">
+    <el-row v-if="item.role === 'user'" class="user-content">
       <el-col :xs="1" :sm="1" :md="3" :lg="4" :xl="6">
         <div />
       </el-col>
@@ -12,10 +12,46 @@
               style="width: 30px; height: 30px; border-radius: 10%"
             />
           </div>
-          <div class="text">{{ item.content }}</div>
+          <div class="pre-user-textarea">
+            <el-input
+              v-model="item.markdown"
+              autosize
+              resize="none"
+              :readonly="!isReadonly.includes(index)"
+              type="textarea"
+              class="user-textarea"
+            />
+            <div class="buttons" v-show="isReadonly.includes(index)">
+              <el-button
+                id="edit-button"
+                type="success"
+                color="#10A37F"
+                @click="Submit(index)"
+                :class="streamData ? 'streamDataTrueSubmit' : 'streamDataFalseSubmit'"
+                >Save & Submit</el-button
+              >
+              <el-button id="cancel-button" @click="Cancel(index)">Cancel</el-button>
+            </div>
+          </div>
+
+          <!-- <textarea
+            ref="userTextarea"
+            :value="item.content"
+            class="user-textarea"
+          ></textarea> -->
+          <!-- <div class="text">
+            <textarea :value="item.content" class="user-textarea"></textarea>
+          </div> -->
         </div>
       </el-col>
       <el-col :xs="1" :sm="1" :md="3" :lg="4" :xl="6">
+        <el-icon
+          @click="userSvgClick(index)"
+          class="IconEdit"
+          size="18"
+          v-show="!isReadonly.includes(index)"
+          ><Edit
+        /></el-icon>
         <div />
       </el-col>
     </el-row>
@@ -28,7 +64,7 @@
         <div class="d1">
           <div>
             <div class="ai-img">
-              <img src="../../assets/svg/logo-svg.svg"/>
+              <img src="../../assets/svg/logo-svg.svg" />
               <!-- <svg
                 width="22"
                 height="24"
@@ -47,7 +83,7 @@
               </svg> -->
             </div>
           </div>
-          <div class="text" v-html="item.markdown"></div>
+          <div ref="userTextarea" class="text" v-html="item.markdown"></div>
         </div>
       </el-col>
       <el-col :xs="1" :sm="1" :md="3" :lg="4" :xl="6">
@@ -58,9 +94,37 @@
 </template>
 
 <script setup>
-import { inject } from "vue";
-
+import { inject, ref } from "vue";
+import { Edit } from "@element-plus/icons-vue";
+const chatHistory = inject("chatHistory");
 const history = inject("history");
+const activeIndex = inject("activeIndex");
+const streamData = inject("streamData");
+const emit = defineEmits(["contentSend"]);
+/* 当点击按钮.user-content svg时 多行文本域.user-textarea变成可编辑 */
+const isReadonly = ref([]);
+const userSvgClick = (index) => {
+  if (!isReadonly.value.includes(index)) isReadonly.value.push(index);
+};
+
+const Submit = (index) => {
+  if(streamData.value) return;//如果正在请求中 则不允许再次提交
+  //从isReadonly中删除index这个元素值
+  isReadonly.value.splice(isReadonly.value.indexOf(index), 1);
+  history.value[index].content = history.value[index].markdown;
+  // 从当前位置截断 再发起请求
+  console.log(index, history.value, history.value.slice(0, index + 2));
+  history.value = history.value.slice(0, index + 2);
+  chatHistory.value[activeIndex.value].history = history.value;
+
+  emit("contentSend");
+};
+
+const Cancel = (index) => {
+  //从isReadonly中删除index这个元素值
+  isReadonly.value.splice(isReadonly.value.indexOf(index), 1);
+  history.value[index].markdown = history.value[index].content;
+};
 </script>
 
 <style scoped>
@@ -89,7 +153,6 @@ const history = inject("history");
 }
 
 .ai-img {
-
   width: 30px;
   height: 30px;
   overflow: hidden;
@@ -97,11 +160,12 @@ const history = inject("history");
   background-color: #43aa8b;
   /* 圆角 */
   border-radius: 10%;
+  margin-top: 5px;
 }
 
 .ai-img img {
-  margin-left:3px;
-  margin-right:3px;
+  margin-left: 3px;
+  margin-right: 3px;
   width: calc(100% - 6px);
   height: 100%;
 }
@@ -122,5 +186,75 @@ const history = inject("history");
   border: rgba(0, 0, 0, 0.1) solid 1px;
   border-right-width: 0px;
   border-left-width: 0px;
+  /* 设置行高 */
+  line-height: 1.5rem;
+  /* 设置文字垂直对齐方式为靠上方 */
+  vertical-align: top;
 }
+
+.IconEdit {
+  padding: 1.5rem 0 1.5rem 0.5rem;
+  display: none;
+  --color: rgb(186, 186, 181);
+  color: var(--color);
+}
+.IconEdit svg {
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.user-content:hover .IconEdit {
+  display: block;
+}
+.user-content svg:hover {
+  background: #e5e5e5;
+  color: rgb(142, 142, 160);
+}
+
+:deep(.user-textarea .el-textarea__inner) {
+  font-size: 1rem;
+  color: rgb(52, 53, 65);
+  line-height: 1.5rem;
+  padding: 0px;
+}
+
+.pre-user-textarea {
+  width: 100%;
+}
+
+.buttons {
+  display: flex;
+  /* 居中 */
+  align-items: center;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+#edit-button {
+  width: 115.75px;
+  height: 37.33px;
+  
+}
+
+.streamDataFalseSubmit:hover {
+  background-color: #1a7f64;
+  
+}
+.streamDataTrueSubmit{
+  opacity: 0.5;
+  cursor:not-allowed;
+}
+
+#cancel-button {
+  color: black;
+  width: 68.02px;
+  height: 37.33px;
+}
+
+#cancel-button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-color: #dcdfe6;
+}
+
 </style>

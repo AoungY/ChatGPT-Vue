@@ -12,11 +12,14 @@
           show-close="true"
           size="260px"
         >
-        
           <component-aside></component-aside>
         </el-drawer>
-        <el-scrollbar class="el-main-scrollbar" ref="scrollbarRef" :style="screenWidth<=768?'max-height: 95vh;':''">
-          <el-main :style="screenWidth<=768?'width:auto':''">
+        <el-scrollbar
+          class="el-main-scrollbar"
+          ref="scrollbarRef"
+          :style="screenWidth <= 768 ? 'max-height: 95vh;' : ''"
+        >
+          <el-main :style="screenWidth <= 768 ? 'width:auto' : ''">
             <!-- 如果history为[]则显示首页提示组件 -->
             <component-index v-if="history.length == 0"></component-index>
             <!-- 
@@ -26,13 +29,12 @@
               lg（大）：992px 或更大宽度的设备或窗口。
               xl（特大）：1200px 或更大宽度的设备或窗口。
              -->
-            <component-content></component-content>
+            <component-content @contentSend="contentSend"></component-content>
           </el-main>
-          <component-footer></component-footer>
+          <component-footer ref="componentFooter"></component-footer>
         </el-scrollbar>
       </el-container>
     </el-container>
-    
   </div>
 </template>
 
@@ -71,6 +73,8 @@ const streamData = ref(false); //是否正在接收流式数据
 const drawerAside = ref(false); //侧边栏抽屉
 
 const scrollbarRef = ref(); //main的滚动条ref
+
+const componentFooter = ref(null);//contentFooter组件的ref
 //新会话
 const newChat = () => {
   console.log("newChat");
@@ -84,9 +88,15 @@ const newChat = () => {
 const chatHistory = ref([]);
 onBeforeMount(() => {
   chatHistory.value = JSON.parse(localStorage.getItem("chatHistory"));
-  if(chatHistory.value == null) chatHistory.value = [];
+  if (chatHistory.value == null) chatHistory.value = [];
   // console.log(chatHistory.value);
 });
+
+//content组件发送消息
+const contentSend = () => {
+  console.log("contentSend");
+  componentFooter.value.sendApi();
+};
 
 //<start>子组件传值
 //方法
@@ -100,7 +110,7 @@ provide("drawerAside", drawerAside);
 provide("abortController", abortController);
 provide("streamData", streamData);
 provide("scrollbarRef", scrollbarRef);
-provide("screenWidth", screenWidth);// 传递屏幕宽度
+provide("screenWidth", screenWidth); // 传递屏幕宽度
 //<end>子组件传值
 </script>
 
@@ -114,16 +124,12 @@ provide("screenWidth", screenWidth);// 传递屏幕宽度
     display: flex;
   } */
 
-
-
   .el-main.el-main {
     width: auto;
   }
   .el-main-scrollbar {
     max-height: 95vh;
   }
-
-  
 }
 
 .el-main {
@@ -133,7 +139,7 @@ provide("screenWidth", screenWidth);// 传递屏幕宽度
   /* padding:20px 0px 20px 0px; */
   overflow-x: hidden;
   /* min-height:80vh; */
-  margin-bottom:15vh;
+  margin-bottom: 15vh;
 }
 
 .el-main-scrollbar {
