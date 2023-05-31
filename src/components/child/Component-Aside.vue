@@ -106,6 +106,8 @@ import { EditOutlined } from "@ant-design/icons-vue";
 import { ref, inject,nextTick } from "vue";
 //<start>获取父组件变量/方法
 const history = inject("history");
+const structure = inject("structure");
+const updataShowdata = inject("updataShowdata");
 const chatHistory = inject("chatHistory");
 const activeIndex = inject("activeIndex");
 const newChat = inject("newChat");
@@ -125,6 +127,9 @@ const getChatInfo = async (index) => {
   if (activeIndex.value != index) drawerAside.value = false;
   activeIndex.value = index.toString();
   history.value = chatHistory.value[index].history;
+
+  structure.value = chatHistory.value[index].structure;
+  updataShowdata();
 
   // 滚动条置底
   nextTick(() => {

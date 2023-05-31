@@ -66,6 +66,8 @@ onBeforeUnmount(() => {
 //变量声明
 const activeIndex = ref(-1); //当前会话索引
 const history = ref([]); //当前会话聊天记录
+const structure = ref([]); // 会话结构
+const showData = ref([]); // 显示的会话数据
 const question = ref(""); //问题
 const deleteTitle = ref(-1); //删除会话索引
 const abortController = ref(null); //终止fetch
@@ -74,11 +76,12 @@ const drawerAside = ref(false); //侧边栏抽屉
 
 const scrollbarRef = ref(); //main的滚动条ref
 
-const componentFooter = ref(null);//contentFooter组件的ref
+const componentFooter = ref(null); //contentFooter组件的ref
 //新会话
 const newChat = () => {
   console.log("newChat");
   history.value = [];
+  showData.value = [];
   if (activeIndex.value != -1) drawerAside.value = false;
   activeIndex.value = -1;
   deleteTitle.value = -1;
@@ -95,7 +98,21 @@ onBeforeMount(() => {
 //content组件发送消息
 const contentSend = () => {
   console.log("contentSend");
+  updataShowdata();
   componentFooter.value.sendApi();
+};
+
+//根据tail更新会话结构
+const updataShowdata = () => {
+  // let i = structure.value.length - 1;
+  let i = chatHistory.value[activeIndex.value].tail;
+  console.log("getStructure", i, history.value);
+  showData.value = [];
+  while (i != 0) {
+    console.log(i - 1, structure.value[i], history.value[i - 1]);
+    showData.value.unshift({value:history.value[i - 1],structure_index:i});
+    i = structure.value[i][0];
+  }
 };
 
 //<start>子组件传值
@@ -111,6 +128,9 @@ provide("abortController", abortController);
 provide("streamData", streamData);
 provide("scrollbarRef", scrollbarRef);
 provide("screenWidth", screenWidth); // 传递屏幕宽度
+provide("structure", structure);
+provide("showData", showData);
+provide("updataShowdata", updataShowdata);
 //<end>子组件传值
 </script>
 

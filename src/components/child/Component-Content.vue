@@ -1,8 +1,53 @@
 <template>
-  <div v-for="(item, index) in history" :key="index" class="content">
-    <el-row v-if="item.role === 'user'" class="user-content">
+  <div v-for="(item, index) in showData" :key="index" class="content">
+    <el-row v-if="item.value.role === 'user'" class="user-content">
       <el-col :xs="1" :sm="1" :md="3" :lg="4" :xl="6">
-        <div />
+        <div
+          class="switchover"
+          v-show="structure[structure[item.structure_index][0]].length - 1 >= 2 && screenWidth > 992 && !isReadonly.includes(index)"
+        >
+          <svg
+            @click="switchover(item.structure_index, -1)"
+            :class="nowIndex(item.structure_index) == 1 ? 'switchoverHidden' : ''"
+            stroke="currentColor"
+            fill="none"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-3 w-3"
+            height="1em"
+            width="1em"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span class="flex-grow flex-shrink-0"
+            >{{ nowIndex(item.structure_index) }} /
+            {{ structure[structure[item.structure_index][0]].length - 1 }}</span
+          >
+          <svg
+            @click="switchover(item.structure_index, 1)"
+            :class="
+              nowIndex(item.structure_index) ==
+              structure[structure[item.structure_index][0]].length - 1
+                ? 'switchoverHidden'
+                : ''
+            "
+            stroke="currentColor"
+            fill="none"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-3 w-3"
+            height="1em"
+            width="1em"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
       </el-col>
       <el-col :xs="20" :sm="20" :md="18" :lg="16" :xl="12">
         <div class="d1">
@@ -14,19 +59,65 @@
           </div>
           <div class="pre-user-textarea">
             <el-input
-              v-model="item.markdown"
+              v-model="item.value.markdown"
               autosize
               resize="none"
               :readonly="!isReadonly.includes(index)"
               type="textarea"
               class="user-textarea"
             />
+            <div
+              class="switchover switchoverPhone"
+              v-show="structure[structure[item.structure_index][0]].length - 1 >= 2 && screenWidth <= 992 && !isReadonly.includes(index)"
+            >
+              <svg
+                @click="switchover(item.structure_index, -1)"
+                :class="nowIndex(item.structure_index) == 1 ? 'switchoverHidden' : ''"
+                stroke="currentColor"
+                fill="none"
+                stroke-width="1.5"
+                viewBox="0 0 24 24"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-3 w-3"
+                height="1em"
+                width="1em"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+              <span class="flex-grow flex-shrink-0"
+                >{{ nowIndex(item.structure_index) }} /
+                {{ structure[structure[item.structure_index][0]].length - 1 }}</span
+              >
+              <svg
+                @click="switchover(item.structure_index, 1)"
+                :class="
+                  nowIndex(item.structure_index) ==
+                  structure[structure[item.structure_index][0]].length - 1
+                    ? 'switchoverHidden'
+                    : ''
+                "
+                stroke="currentColor"
+                fill="none"
+                stroke-width="1.5"
+                viewBox="0 0 24 24"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-3 w-3"
+                height="1em"
+                width="1em"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
             <div class="buttons" v-show="isReadonly.includes(index)">
               <el-button
                 id="edit-button"
                 type="success"
                 color="#10A37F"
-                @click="Submit(index)"
+                @click="Submit(index, item.structure_index)"
                 :class="streamData ? 'streamDataTrueSubmit' : 'streamDataFalseSubmit'"
                 >Save & Submit</el-button
               >
@@ -49,6 +140,7 @@
           @click="userSvgClick(index)"
           class="IconEdit"
           size="18"
+          :style="screenWidth <= 1022 ? 'display:block;' : ''"
           v-show="!isReadonly.includes(index)"
           ><Edit
         /></el-icon>
@@ -83,7 +175,7 @@
               </svg> -->
             </div>
           </div>
-          <div ref="userTextarea" class="text" v-html="item.markdown"></div>
+          <div ref="userTextarea" class="text" v-html="item.value.markdown"></div>
         </div>
       </el-col>
       <el-col :xs="1" :sm="1" :md="3" :lg="4" :xl="6">
@@ -98,24 +190,38 @@ import { inject, ref } from "vue";
 import { Edit } from "@element-plus/icons-vue";
 const chatHistory = inject("chatHistory");
 const history = inject("history");
+const structure = inject("structure"); //结构化数据
+const showData = inject("showData");
+const updataShowdata = inject("updataShowdata"); //更新showData
 const activeIndex = inject("activeIndex");
 const streamData = inject("streamData");
+const screenWidth = inject("screenWidth");
 const emit = defineEmits(["contentSend"]);
+
 /* 当点击按钮.user-content svg时 多行文本域.user-textarea变成可编辑 */
 const isReadonly = ref([]);
 const userSvgClick = (index) => {
   if (!isReadonly.value.includes(index)) isReadonly.value.push(index);
 };
 
-const Submit = (index) => {
-  if(streamData.value) return;//如果正在请求中 则不允许再次提交
+const Submit = (index, structure_index) => {
+  if (streamData.value) return; //如果正在请求中 则不允许再次提交
   //从isReadonly中删除index这个元素值
   isReadonly.value.splice(isReadonly.value.indexOf(index), 1);
-  history.value[index].content = history.value[index].markdown;
-  // 从当前位置截断 再发起请求
-  console.log(index, history.value, history.value.slice(0, index + 2));
-  history.value = history.value.slice(0, index + 2);
-  chatHistory.value[activeIndex.value].history = history.value;
+  console.log("showData", showData.value, index, structure_index);
+  history.value.push({
+    role: "user",
+    content: showData.value[index].value.markdown,
+    markdown: showData.value[index].value.markdown,
+  });
+  history.value.push({ role: "ai", content: "" });
+
+  structure.value.push([structure.value[structure_index][0], structure.value.length + 1]);
+  structure.value[structure.value[structure_index][0]].push(structure.value.length - 1);
+  structure.value.push([structure.value.length - 1]);
+
+  showData.value[index].value.markdown = showData.value[index].value.content; //将编辑的内容还原
+  chatHistory.value[activeIndex.value].tail = structure.value.length - 1;
 
   emit("contentSend");
 };
@@ -125,9 +231,32 @@ const Cancel = (index) => {
   isReadonly.value.splice(isReadonly.value.indexOf(index), 1);
   history.value[index].markdown = history.value[index].content;
 };
+
+//返回当前是第几个
+const nowIndex = (structureIndex) => {
+  let structureParent = structure.value[structure.value[structureIndex][0]];
+  for (let i = 1; i < structureParent.length; i++) {
+    if (structureParent[i] == structureIndex) return i;
+  }
+};
+
+//切换
+const switchover = (structureIndex, offset) => {
+  let now_index = nowIndex(structureIndex);
+
+  let structureParent = structure.value[structure.value[structureIndex][0]];
+  if (now_index + offset >= structureParent.length || now_index + offset <= 0) return;
+  let tail = structureParent[now_index + offset];
+
+  while (structure.value[tail].length != 1) tail = structure.value[tail][1];
+  chatHistory.value[activeIndex.value].tail = tail;
+  localStorage.setItem("chatHistory", JSON.stringify(chatHistory.value)); //持久化用户的当前对话信息在哪
+  updataShowdata();
+};
 </script>
 
 <style scoped>
+
 .content {
   font-size: 1rem;
   color: rgb(52, 53, 65);
@@ -150,6 +279,35 @@ const Cancel = (index) => {
 }
 :deep(.text p:last-child) {
   margin-bottom: 0px;
+}
+
+.switchover {
+  display: flex;
+  /* 位于父元素的右边 */
+  margin-left: auto;
+  align-items: center;
+
+  gap: 0.25rem;
+  padding-top: 38px;
+  /* margin-right: 10px; */
+  width: 70px;
+  height: 16px;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.switchoverHidden.switchoverHidden {
+  cursor: default;
+  /* 透明度 */
+  opacity: 0.5;
+}
+.switchoverPhone{
+  margin-right:auto;
+  margin-left:0;
+}
+
+.switchover svg {
+  cursor: pointer;
 }
 
 .ai-img {
@@ -207,7 +365,7 @@ const Cancel = (index) => {
 .user-content:hover .IconEdit {
   display: block;
 }
-.user-content svg:hover {
+.IconEdit svg:hover {
   background: #e5e5e5;
   color: rgb(142, 142, 160);
 }
@@ -234,16 +392,14 @@ const Cancel = (index) => {
 #edit-button {
   width: 115.75px;
   height: 37.33px;
-  
 }
 
 .streamDataFalseSubmit:hover {
   background-color: #1a7f64;
-  
 }
-.streamDataTrueSubmit{
+.streamDataTrueSubmit {
   opacity: 0.5;
-  cursor:not-allowed;
+  cursor: not-allowed;
 }
 
 #cancel-button {
@@ -256,5 +412,4 @@ const Cancel = (index) => {
   background-color: rgba(0, 0, 0, 0.1);
   border-color: #dcdfe6;
 }
-
 </style>

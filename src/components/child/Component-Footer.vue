@@ -180,8 +180,12 @@ import { marked } from "marked";
 import hljs from "highlight.js";
 import { markedHighlight } from "marked-highlight";
 import { mangle } from "marked-mangle";
+import { update } from "lodash";
 //<start>获取父组件变量/方法
 const history = inject("history");
+const structure = inject("structure"); //结构化数据
+const showData = inject("showData"); //显示的数据
+const updataShowdata = inject("updataShowdata"); //更新showData
 const question = inject("question"); //问题
 const chatHistory = inject("chatHistory");
 const activeIndex = inject("activeIndex");
@@ -189,6 +193,7 @@ const abortController = inject("abortController"); //终止fetch
 const streamData = inject("streamData"); //是否正在接收流式数据
 const scrollbarRef = inject("scrollbarRef");
 const screenWidth = inject("screenWidth"); //屏幕宽度
+
 let timer = null; // 定时器变量
 //<end>获取父组件变量/方法
 const contextLength = ref(8); //上下文长度
@@ -234,7 +239,7 @@ const sendQuestion = () => {
       { role: "user", content: question.value, markdown: question.value },
       { role: "ai", content: "" },
     ];
-
+    structure.value = [[-1, 1], [0, 2], [1]];
     // 从尾部加入
     // chatHistory.value.push({
     //   title: "New Chat",
@@ -246,8 +251,11 @@ const sendQuestion = () => {
     chatHistory.value.unshift({
       title: "New Chat",
       history: history.value,
+      structure: structure.value,
+      tail: 2,
     });
     activeIndex.value = "0";
+    updataShowdata();
     sendApi();
   } else {
     //旧会话
@@ -257,6 +265,18 @@ const sendQuestion = () => {
       markdown: question.value,
     });
     history.value.push({ role: "ai", content: "" });
+
+    structure.value.push([
+      chatHistory.value[activeIndex.value].tail,
+      structure.value.length + 1,
+    ]);
+    structure.value[chatHistory.value[activeIndex.value].tail].push(
+      structure.value.length - 1
+    );
+    structure.value.push([structure.value.length - 1]);
+
+    chatHistory.value[activeIndex.value].tail = structure.value.length - 1;
+    updataShowdata();
     sendApi();
   }
   question.value = "";
@@ -266,12 +286,18 @@ const sendApi = async () => {
   setPoint(); //发送时两个点的动画
   let index = parseInt(activeIndex.value); //当前会话索引
   // 注：如果后续使用history.at(-1) 则在你自己手机中无法发送成功！！！
-  let len = chatHistory.value[index].history.length - 1;
-  chatHistory.value[index].history[len].content = "";
-  delete chatHistory.value[index].history[len]["markdown"];
-  // chatHistory.value[index].history.at(-1).markdown; //清空上一次ai生成的内容
-  let data = chatHistory.value[index].history.slice(0, history.value.length - 1);
+  let len = showData.value.length - 1;
 
+  showData.value[len].value.content = "";
+  delete showData.value[len].value["markdown"];
+  // chatHistory.value[index].history.at(-1).markdown; //清空上一次ai生成的内容
+  let data = showData.value.slice(0, showData.value.length - 1);
+  //遍历data 提取出元素中的value
+  data = data.map((item) => {
+    return item.value;
+  });
+
+  console.log("data", data.length);
   streamData.value = true; //开启流式数据
   abortController.value = new AbortController(); //重置abortController
   const response = await fetch("/chatGPT", {
@@ -294,12 +320,13 @@ const sendApi = async () => {
     }
     // console.log(done, value, new TextDecoder("utf-8").decode(value));
     // 写法二：history.value[history.value.length - 1]["content"] += new TextDecoder("utf-8").decode(value);
-    chatHistory.value[index].history[len].content += new TextDecoder("utf-8").decode(
-      value
-    ); //// 这样写也能改变history 因为本质history是一个引用
-    chatHistory.value[index].history[len].markdown = marked.parse(
-      chatHistory.value[index].history[len].content
-    );
+    showData.value[len].value.content += new TextDecoder("utf-8").decode(value);
+    showData.value[len].value.markdown = marked.parse(showData.value[len].value.content);
+
+    // chatHistory.value[index].history[len].content += new TextDecoder("utf-8").decode(value); //// 这样写也能改变history 因为本质history是一个引用
+    // chatHistory.value[index].history[len].markdown = marked.parse(
+    // chatHistory.value[index].history[len].content
+    // );
     // marked.parse(text);
 
     let sub =
@@ -381,9 +408,7 @@ const setPoint = () => {
   }, 400);
 };
 
-
-
-defineExpose({ sendApi });// 暴露方法给父组件
+defineExpose({ sendApi }); // 暴露方法给父组件
 </script>
 
 <style>
