@@ -4,7 +4,7 @@
       <div
         class="regenerate"
         v-show="screenWidth > 768 && activeIndex !== -1 && !streamData"
-        @click="sendApi()"
+        @click="regenerateSend()"
         :style="
           screenWidth <= 768
             ? `    bottom: 7.5vh;
@@ -114,7 +114,7 @@
         <div class="phone-regenerate" v-show="screenWidth <= 768 && activeIndex !== -1">
           <svg
             v-show="screenWidth <= 768 && activeIndex !== -1 && !streamData"
-            @click="sendApi()"
+            @click="regenerateSend()"
             stroke="currentColor"
             fill="none"
             stroke-width="2"
@@ -376,6 +376,23 @@ const getTitle = async (index) => {
     chatHistory.value[index].title += new TextDecoder("utf-8").decode(value);
   }
   localStorage.setItem("chatHistory", JSON.stringify(chatHistory.value));
+};
+
+//regenerateSend
+const regenerateSend = () => {
+  console.log("regenerateSend");
+
+  history.value.push({ role: "ai", content: "" });
+
+  structure.value.push([structure.value[chatHistory.value[activeIndex.value].tail][0]]);
+  structure.value[structure.value[chatHistory.value[activeIndex.value].tail]].push(
+    structure.value.length - 1
+  );
+
+  chatHistory.value[activeIndex.value].tail = structure.value.length - 1;
+  updataShowdata();
+
+  sendApi();
 };
 
 //停止接收流式数据

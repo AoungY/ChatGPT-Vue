@@ -19,8 +19,8 @@ export default defineConfig({
   server: {
     proxy:{
       '/chatGPT': {
-        // target: 'http://localhost:8089/api/v1/chat',
-        target: 'http://43.139.56.64:9997/api/v1/chat',
+        target: 'http://localhost:8089/api/v1/chat',
+        // target: 'http://43.139.56.64:9997/api/v1/chat',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/chatGPT/, '')
       }

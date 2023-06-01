@@ -90,8 +90,20 @@ const newChat = () => {
 //收集浏览器历史记录
 const chatHistory = ref([]);
 onBeforeMount(() => {
-  chatHistory.value = JSON.parse(localStorage.getItem("chatHistory"));
-  if (chatHistory.value == null) chatHistory.value = [];
+  try {
+    chatHistory.value = JSON.parse(localStorage.getItem("chatHistory"));
+    if (
+      chatHistory.value == null ||
+      (chatHistory.value.length != 0 &&
+        chatHistory.value[chatHistory.value.length - 1].tail == null)
+    ) {
+      chatHistory.value = [];
+    }
+  } catch (e) {
+    chatHistory.value = [];
+  }
+
+  // if (chatHistory.value == null) chatHistory.value = [];
   // console.log(chatHistory.value);
 });
 
@@ -106,11 +118,11 @@ const contentSend = () => {
 const updataShowdata = () => {
   // let i = structure.value.length - 1;
   let i = chatHistory.value[activeIndex.value].tail;
-  console.log("getStructure", i, history.value);
+  // console.log("getStructure", i, history.value);
   showData.value = [];
   while (i != 0) {
-    console.log(i - 1, structure.value[i], history.value[i - 1]);
-    showData.value.unshift({value:history.value[i - 1],structure_index:i});
+    // console.log(i - 1, structure.value[i], history.value[i - 1]);
+    showData.value.unshift({ value: history.value[i - 1], structure_index: i });
     i = structure.value[i][0];
   }
 };
