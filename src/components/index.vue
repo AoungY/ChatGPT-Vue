@@ -143,6 +143,7 @@ provide("screenWidth", screenWidth); // 传递屏幕宽度
 provide("structure", structure);
 provide("showData", showData);
 provide("updataShowdata", updataShowdata);
+provide("deleteTitle", deleteTitle);
 //<end>子组件传值
 </script>
 

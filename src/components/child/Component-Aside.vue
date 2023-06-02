@@ -96,6 +96,16 @@
           </el-menu-item>
         </el-menu>
       </div>
+
+      <div class="tools">
+        <div @mousedown="CLearnConversations">
+          <el-icon v-if="deleteTitle !== 99999" size="1.125rem"><Delete /></el-icon>
+          <el-icon v-else class="bt3" size="16px"><Check /></el-icon>
+
+          <span v-if="deleteTitle !== 99999">Clear conversations</span>
+          <span v-else>Confirm clear conversations</span>
+        </div>
+      </div>
     </el-aside>
   </el-scrollbar>
 </template>
@@ -103,7 +113,7 @@
 <script setup>
 import { ChatSquare, Delete, Check, Close } from "@element-plus/icons-vue";
 import { EditOutlined } from "@ant-design/icons-vue";
-import { ref, inject,nextTick } from "vue";
+import { ref, inject, nextTick } from "vue";
 //<start>获取父组件变量/方法
 const history = inject("history");
 const structure = inject("structure");
@@ -115,6 +125,7 @@ const drawerAside = inject("drawerAside");
 const abortController = inject("abortController"); //终止fetch
 const streamData = inject("streamData"); //是否正在接收流式数据
 const scrollbarRef = inject("scrollbarRef"); // main的滚动条ref
+const deleteTitle = inject("deleteTitle"); //删除会话索引
 //<end>获取父组件变量/方法
 //aside
 
@@ -178,7 +189,20 @@ const messageDelete = (index) => {
   });
 };
 
-const deleteTitle = ref(-1);
+//删除所有会话
+const CLearnConversations = () => {
+  console.log("CLearnConversations");
+  if(deleteTitle.value === 99999) {
+    deleteTitle.value = -1;
+    newChat();
+    chatHistory.value = [];
+    localStorage.setItem("chatHistory", JSON.stringify(chatHistory.value));
+  }
+  else{
+    deleteTitle.value = 99999;
+  }
+
+};
 </script>
 
 <style scoped>
@@ -216,6 +240,38 @@ const deleteTitle = ref(-1);
 .new-chat:hover {
   background: hsla(240, 9%, 59%, 0.1);
 }
+
+.tools {
+  /* 设置样式持续固定在底部 */
+  position: absolute;
+  bottom: 0;
+  padding-top: 0.5rem;
+  width: 240px;
+  border-color: hsla(0, 0%, 100%, 0.2);
+  border-top-width: 1px;
+  border-top-style: solid;
+
+  background-color: #202123;
+}
+
+.tools > div {
+  justify-content: space-between;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  cursor: pointer;
+  padding: 12px;
+  margin: 0px 0px 4px;
+}
+.tools > div:hover {
+  background-color: rgb(64, 65, 79);
+  border-radius: 0.25rem;
+}
+
+.tools > div span {
+  width: 100%;
+}
+
 .chat-history {
   margin-top: 2rem;
 }

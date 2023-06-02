@@ -44,7 +44,6 @@
   </div>
 </template>
 <script setup>
-import { defineProps } from "vue";
 
 defineProps({
   nowIndex: Object,
