@@ -1,9 +1,7 @@
 {
     "rewrites": [
       {
-        // 访问路径匹配规则
         "source": "/chatGPT/(.*)",
-        // 重写的目标地址
         "destination": "http://43.139.56.64:9997/api/v1/chat"
       }
     ]
