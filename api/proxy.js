@@ -1,5 +1,4 @@
-const { createProxyMiddleware } = require('http-proxy-middleware')
-
+import { createProxyMiddleware } from 'http-proxy-middleware';
 module.exports = (req, res) => {
   let target = ''
   // 代理目标地址
@@ -7,7 +6,7 @@ module.exports = (req, res) => {
   if (req.url.startsWith('/chatGPT')) {
     target = 'http://43.139.56.64:9997'
   }
-  console.log(req.url);
+  console.log("--------",req.url, target);
   // 创建代理对象并转发请求
   createProxyMiddleware({
     target,
