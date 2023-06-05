@@ -7,7 +7,7 @@ module.exports = (req, res) => {
   if (req.url.startsWith('/chatGPT')) {
     target = 'http://43.139.56.64:9997'
   }
-
+  console.log(req.url);
   // 创建代理对象并转发请求
   createProxyMiddleware({
     target,
@@ -15,7 +15,7 @@ module.exports = (req, res) => {
     pathRewrite: {
       // 通过路径重写，去除请求路径中的 `/backend`
       // 例如 /backend/user/login 将被转发到 http://backend-api.com/user/login
-      '^/chatGPT/': '/api/v1/chat'
+      '^/chatGPT': '/api/v1/chat'
     }
   })(req, res)
 }
