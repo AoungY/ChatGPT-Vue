@@ -73,7 +73,7 @@ const deleteTitle = ref(-1); //删除会话索引
 const abortController = ref(null); //终止fetch
 const streamData = ref(false); //是否正在接收流式数据
 const drawerAside = ref(false); //侧边栏抽屉
-
+const dialogSettings = ref(false); //settings对话框是否打开
 const scrollbarRef = ref(); //main的滚动条ref
 
 const componentFooter = ref(null); //contentFooter组件的ref
@@ -89,9 +89,17 @@ const newChat = () => {
 
 //收集浏览器历史记录
 const chatHistory = ref([]);
+const settings = ref();
 onBeforeMount(() => {
   try {
     chatHistory.value = JSON.parse(localStorage.getItem("chatHistory"));
+    if (localStorage.getItem("settings")) {
+      settings.value = JSON.parse(localStorage.getItem("settings"));
+    } else {
+      settings.value = { charactersName:"",prompt:"", characters: {}, temperature: 0.5 };
+      localStorage.setItem("settings", JSON.stringify(settings.value));
+    }
+
     if (
       chatHistory.value == null ||
       (chatHistory.value.length != 0 &&
@@ -101,6 +109,7 @@ onBeforeMount(() => {
     }
   } catch (e) {
     chatHistory.value = [];
+    localStorage.setItem("chatHistory", JSON.stringify(chatHistory.value));
   }
 
   // if (chatHistory.value == null) chatHistory.value = [];
@@ -144,6 +153,8 @@ provide("structure", structure);
 provide("showData", showData);
 provide("updataShowdata", updataShowdata);
 provide("deleteTitle", deleteTitle);
+provide("dialogSettings", dialogSettings);
+provide("settings", settings);
 //<end>子组件传值
 </script>
 

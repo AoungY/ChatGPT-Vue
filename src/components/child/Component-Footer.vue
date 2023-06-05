@@ -193,7 +193,7 @@ const abortController = inject("abortController"); //终止fetch
 const streamData = inject("streamData"); //是否正在接收流式数据
 const scrollbarRef = inject("scrollbarRef");
 const screenWidth = inject("screenWidth"); //屏幕宽度
-
+const settings = inject("settings"); //设置
 let timer = null; // 定时器变量
 //<end>获取父组件变量/方法
 const contextLength = ref(8); //上下文长度
@@ -300,12 +300,15 @@ const sendApi = async () => {
   console.log("data", data.length);
   streamData.value = true; //开启流式数据
   abortController.value = new AbortController(); //重置abortController
+  data = data.splice(-contextLength.value); //截取最后8个元素
+  data.unshift({prompt:settings.value.prompt,temperature:settings.value.temperature});//加入设置
+
   const response = await fetch("/chatGPT", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(data.splice(-contextLength.value)),
+    body: JSON.stringify(data),
     signal: abortController.signal,
   });
   const reader = response.body.getReader();
