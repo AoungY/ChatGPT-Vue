@@ -160,7 +160,7 @@
         "
       >
         <span>
-          The model is gpt-3.5-turbo-0301.Data stored locally in the browser (safe and
+          The model is gpt-3.5-turbo-16k-0613.Data stored locally in the browser (safe and
           free).Problem feedback
           <a
             href="tencent://Message/?Uin=3342174599&websiteName=www.oicqzone.com&Menu=yes"
